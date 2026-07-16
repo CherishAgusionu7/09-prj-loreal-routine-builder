@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/configuration-schema.json",
+  "name": "loreal-routine-builder",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-16",
+  "observability": {
+    "enabled": true,
+  },
+  "vars": {
+    "OPENAI_MODEL": "gpt-4.1-mini",
+  },
+}

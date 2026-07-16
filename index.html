@@ -1,89 +1,311 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>L'Oréal | Smart Routine &amp; Product Advisor</title>
+    <title>L'Oréal | Product-Aware Routine Builder Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap"
       rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
     />
     <link rel="stylesheet" href="style.css" />
   </head>
-
   <body>
-    <div class="page-wrapper">
-      <!------- Header / Branding ------->
-      <header class="site-header">
-        <img src="img/loreal-logo.png" alt="L'Oréal Logo" class="logo" />
-        <h1 class="site-title">Smart Routine &amp; Product Advisor</h1>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero__brand">
+          <img
+            src="img/loreal-logo.png"
+            alt="L'Oréal logo"
+            class="hero__logo"
+          />
+          <button
+            id="directionToggle"
+            class="icon-button hero__toggle"
+            type="button"
+            aria-pressed="false"
+            aria-label="Switch page direction to right to left"
+          >
+            RTL
+          </button>
+        </div>
+
+        <div class="hero__content">
+          <p class="eyebrow">Premium routine planning</p>
+          <h1>Build Your Personalized Beauty Routine</h1>
+          <p class="hero__description">
+            Browse real L'Oréal brand products, select the ones you want, and
+            get a routine that fits your goals. You can filter by category,
+            search by concern or brand, save your picks, and keep chatting with
+            the advisor after the first routine is generated.
+          </p>
+        </div>
+
+        <div class="hero__meta">
+          <p>
+            Start with your products, add a few preferences, then let the AI
+            arrange the steps in a sensible order.
+          </p>
+        </div>
       </header>
 
-      <!-- Category Filter -->
-      <div class="search-section">
-        <select id="categoryFilter">
-          <option value="" disabled selected>Choose a Category</option>
-          <option value="cleanser">Cleansers</option>
-          <option value="moisturizer">Moisturizers & Treatments</option>
-          <option value="haircare">Haircare</option>
-          <option value="makeup">Makeup</option>
-          <option value="hair color">Hair Color</option>
-          <option value="hair styling">Hair Styling</option>
-          <option value="men's grooming">Men's Grooming</option>
-          <option value="suncare">Suncare</option>
-          <option value="fragrance">Fragrance</option>
-        </select>
-      </div>
+      <main class="app-layout">
+        <section class="controls-panel" aria-labelledby="controlsTitle">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Filter and search</p>
+              <h2 id="controlsTitle">Find products fast</h2>
+            </div>
+            <button id="clearFiltersButton" class="text-button" type="button">
+              Clear filters
+            </button>
+          </div>
 
-      <!-- Products Grid -->
-      <div id="productsContainer" class="products-grid"></div>
+          <div class="control-grid">
+            <div class="field-group">
+              <label for="productSearch">Search products</label>
+              <input
+                id="productSearch"
+                name="productSearch"
+                type="search"
+                placeholder="Search by product, brand, concern, or keyword…"
+                autocomplete="off"
+              />
+            </div>
 
-      <!-- Selected Products -->
-      <div class="selected-products">
-        <h2>Selected Products</h2>
-        <div id="selectedProductsList"></div>
-        <button id="generateRoutine" class="generate-btn">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Routine
-        </button>
-      </div>
+            <div class="field-group">
+              <label for="categoryFilter">Category</label>
+              <select id="categoryFilter" name="categoryFilter">
+                <option value="">All Categories</option>
+              </select>
+            </div>
+          </div>
 
-      <!------- Chat Area ------->
-      <section class="chatbox">
-        <h2>Let's Build Your Routine</h2>
-        <div id="chatWindow" class="chat-window"></div>
+          <div
+            class="status-strip"
+            id="pageStatus"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          ></div>
 
-        <form id="chatForm" class="chat-form">
-          <label for="userInput" class="visually-hidden">Message</label>
-          <input
-            id="userInput"
-            name="userInput"
-            type="text"
-            placeholder="Ask me about products or routines…"
-            autocomplete="off"
-            required
-          />
-          <button type="submit" id="sendBtn">
-            <i class="fa-solid fa-paper-plane"></i>
-            <span class="visually-hidden">Send</span>
-          </button>
-        </form>
-      </section>
+          <form
+            id="preferencesForm"
+            class="preferences"
+            aria-labelledby="preferencesTitle"
+          >
+            <div class="section-heading section-heading--tight">
+              <div>
+                <p class="section-kicker">Optional preferences</p>
+                <h2 id="preferencesTitle">Shape the routine</h2>
+              </div>
+            </div>
 
-      <!------- Footer Links ------->
-      <footer class="site-footer">
-        <p>&copy; 2025 L'Oréal. All rights reserved.</p>
-        <nav>
-          <!-- These URLs are placeholders -->
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Use</a>
-          <a href="#">Contact</a>
-        </nav>
-      </footer>
+            <div class="preferences__grid">
+              <div class="field-group">
+                <label for="routineType">Routine type</label>
+                <select id="routineType" name="routineType">
+                  <option value="mixed">Mixed</option>
+                  <option value="skincare">Skincare</option>
+                  <option value="haircare">Haircare</option>
+                  <option value="makeup">Makeup</option>
+                  <option value="fragrance">Fragrance</option>
+                </select>
+              </div>
+
+              <div class="field-group" data-pref-skin>
+                <label for="skinType">Skin type</label>
+                <select id="skinType" name="skinType">
+                  <option value="">Not sure</option>
+                  <option value="dry">Dry</option>
+                  <option value="oil">Oily</option>
+                  <option value="combination">Combination</option>
+                  <option value="normal">Normal</option>
+                  <option value="sensitive">Sensitive</option>
+                  <option value="not sure">Not sure</option>
+                </select>
+              </div>
+
+              <div class="field-group" data-pref-hair>
+                <label for="hairType">Hair type or texture</label>
+                <select id="hairType" name="hairType">
+                  <option value="">Not applicable</option>
+                  <option value="straight">Straight</option>
+                  <option value="wavy">Wavy</option>
+                  <option value="curly">Curly</option>
+                  <option value="coily">Coily</option>
+                  <option value="not applicable">Not applicable</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="primaryConcern">Primary concern</label>
+                <select id="primaryConcern" name="primaryConcern">
+                  <option value="">Choose one</option>
+                  <option value="hydration">Hydration</option>
+                  <option value="acne">Acne</option>
+                  <option value="dark spots">Dark spots</option>
+                  <option value="sensitivity">Sensitivity</option>
+                  <option value="damage">Damage</option>
+                  <option value="volume">Volume</option>
+                  <option value="color protection">Color protection</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="routineTime">Routine time</label>
+                <select id="routineTime" name="routineTime">
+                  <option value="both">Both</option>
+                  <option value="morning">Morning</option>
+                  <option value="evening">Evening</option>
+                  <option value="event-ready">Event-ready</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="experienceLevel">Experience level</label>
+                <select id="experienceLevel" name="experienceLevel">
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="fragranceSensitivity">Fragrance sensitivity</label>
+                <select id="fragranceSensitivity" name="fragranceSensitivity">
+                  <option value="not sure">Not sure</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <section class="catalog-panel" aria-labelledby="catalogTitle">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Product catalog</p>
+              <h2 id="catalogTitle">Choose the products you want</h2>
+            </div>
+            <p class="section-note" id="resultsSummary">Loading products…</p>
+          </div>
+
+          <div
+            id="productsStatus"
+            class="sr-live"
+            aria-live="polite"
+            aria-atomic="true"
+          ></div>
+          <div
+            id="productsContainer"
+            class="products-grid"
+            aria-busy="true"
+          ></div>
+        </section>
+
+        <aside class="selection-panel" aria-labelledby="selectionTitle">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Your picks</p>
+              <h2 id="selectionTitle">Selected Products</h2>
+            </div>
+            <p class="count-pill" id="selectedCount" aria-live="polite">
+              0 selected
+            </p>
+          </div>
+
+          <div
+            id="selectionStatus"
+            class="sr-live"
+            aria-live="polite"
+            aria-atomic="true"
+          ></div>
+          <div id="selectedProductsList" class="selected-list"></div>
+
+          <div class="selection-actions">
+            <button
+              id="generateRoutine"
+              class="primary-button"
+              type="button"
+              disabled
+            >
+              Generate My Routine
+            </button>
+            <button id="clearAllButton" class="secondary-button" type="button">
+              Clear All
+            </button>
+          </div>
+        </aside>
+
+        <section class="chat-panel" aria-labelledby="chatTitle">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Routine chat</p>
+              <h2 id="chatTitle">Ask follow-up questions</h2>
+            </div>
+            <p class="section-note">
+              Generate a routine first to unlock the chat.
+            </p>
+          </div>
+
+          <div
+            id="chatStatus"
+            class="sr-live"
+            aria-live="polite"
+            aria-atomic="true"
+          ></div>
+          <div
+            id="chatWindow"
+            class="chat-window"
+            aria-live="polite"
+            aria-label="Conversation history"
+          ></div>
+
+          <form id="chatForm" class="chat-form">
+            <label for="userInput">Your message</label>
+            <textarea
+              id="userInput"
+              name="userInput"
+              rows="3"
+              placeholder="Ask about your routine, selected products, or beauty tips…"
+              disabled
+            ></textarea>
+            <div class="chat-actions">
+              <button
+                id="sendBtn"
+                class="primary-button primary-button--small"
+                type="submit"
+                disabled
+              >
+                Send Message
+              </button>
+            </div>
+          </form>
+        </section>
+      </main>
     </div>
+
+    <dialog
+      id="productDialog"
+      class="product-dialog"
+      aria-labelledby="productDialogTitle"
+    >
+      <form method="dialog" class="product-dialog__inner">
+        <button
+          class="dialog-close"
+          value="cancel"
+          aria-label="Close product details"
+        >
+          ×
+        </button>
+        <div id="productDialogBody"></div>
+      </form>
+    </dialog>
 
     <script src="script.js"></script>
   </body>

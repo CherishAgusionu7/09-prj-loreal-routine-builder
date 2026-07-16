@@ -1,2 +1,7 @@
 # Secrets file containing API keys
 secrets.js
+.env
+.env.*
+worker/.dev.vars
+worker/.wrangler/
+worker/node_modules/
