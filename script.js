@@ -1,4 +1,4 @@
-const WORKER_URL = "PASTE_WORKER_URL_HERE";
+const WORKER_URL = "https://loreal-routine-builder.agusionucherish.workers.dev";
 const PRODUCTS_STORAGE_KEY = "lorealRoutineSelectedProducts";
 const PREFERENCES_STORAGE_KEY = "lorealRoutinePreferences";
 const DIRECTION_STORAGE_KEY = "lorealRoutineDirection";
@@ -618,7 +618,11 @@ function getWorkerRequestBody(action, extraFields = {}) {
 }
 
 function validateWorkerUrl() {
-  if (WORKER_URL.includes("PASTE_WORKER_URL_HERE")) {
+  if (
+    WORKER_URL.includes(
+      "https://loreal-routine-builder.agusionucherish.workers.dev",
+    )
+  ) {
     throw new Error("Worker URL has not been configured yet.");
   }
 }
