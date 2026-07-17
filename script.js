@@ -542,6 +542,31 @@ function closeProductDetails() {
   }
 }
 
+function renderMarkdownIntoElement(targetElement, markdownText) {
+  const safeText = String(markdownText ?? "");
+
+  // If markdown libraries are unavailable, preserve readable plain text output.
+  if (!window.marked || !window.DOMPurify) {
+    targetElement.textContent = safeText;
+    return;
+  }
+
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+  });
+
+  const unsafeHtml = marked.parse(safeText);
+  const safeHtml = DOMPurify.sanitize(unsafeHtml);
+  targetElement.innerHTML = safeHtml;
+
+  // Open generated links in a new tab with safe rel attributes.
+  targetElement.querySelectorAll("a").forEach((link) => {
+    link.setAttribute("target", "_blank");
+    link.setAttribute("rel", "noopener noreferrer");
+  });
+}
+
 function createMessageElement(role, text) {
   const message = document.createElement("article");
   message.className = `chat-message chat-message--${role}`;
@@ -549,7 +574,14 @@ function createMessageElement(role, text) {
   label.className = "chat-message__label";
   label.textContent = role === "user" ? "You" : "L'Oréal Advisor";
   const content = document.createElement("div");
-  content.textContent = text;
+  content.className = `chat-message__content chat-message__content--${role}`;
+
+  if (role === "assistant") {
+    renderMarkdownIntoElement(content, text);
+  } else {
+    content.textContent = text;
+  }
+
   message.append(label, content);
   return message;
 }
