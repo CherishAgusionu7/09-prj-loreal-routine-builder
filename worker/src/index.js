@@ -3,57 +3,37 @@ const MAX_BODY_BYTES = 120_000;
 const MAX_PRODUCTS = 20;
 const MAX_HISTORY = 12;
 
-const ALLOWED_EXACT_ORIGINS = new Set([
+const ALLOWED_ORIGINS = new Set([
   "https://cherishagusionu7.github.io",
-  "http://localhost:5500",
-  "http://127.0.0.1:5500",
-  "http://localhost:4173",
-  "http://127.0.0.1:4173",
   "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "https://gca-classroom.github.io",
+  "http://localhost:5173",
+  "http://localhost:8000",
 ]);
 
-const ALLOWED_ORIGIN_PATTERNS = [
-  /^https:\/\/[a-z0-9-]+\.app\.github\.dev$/i,
-  /^https:\/\/[a-z0-9-]+\.preview\.app\.github\.dev$/i,
-];
+function getCorsHeaders(request) {
+  const origin = request.headers.get("Origin");
 
-function isAllowedOrigin(origin) {
-  if (!origin) {
-    return false;
-  }
-
-  if (ALLOWED_EXACT_ORIGINS.has(origin)) {
-    return true;
-  }
-
-  return ALLOWED_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin));
-}
-
-function getCorsHeaders(origin) {
-  if (!origin || !isAllowedOrigin(origin)) {
-    return new Headers({
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+  if (!origin || !ALLOWED_ORIGINS.has(origin)) {
+    return {
       Vary: "Origin",
-    });
+    };
   }
 
-  return new Headers({
+  return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Max-Age": "86400",
     Vary: "Origin",
-  });
+  };
 }
 
-function jsonResponse(payload, status = 200, origin = "") {
+function jsonResponse(request, payload, status = 200) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      ...Object.fromEntries(getCorsHeaders(origin)),
+      ...getCorsHeaders(request),
     },
   });
 }
@@ -270,12 +250,12 @@ async function callOpenAI(
   };
 }
 
-function buildOkResponse(data, origin) {
-  return jsonResponse(data, 200, origin);
+function buildOkResponse(request, data) {
+  return jsonResponse(request, data, 200);
 }
 
-function buildErrorResponse(message, status, origin) {
-  return jsonResponse({ error: message }, status, origin);
+function buildErrorResponse(request, message, status) {
+  return jsonResponse(request, { error: message }, status);
 }
 
 export default {
@@ -283,22 +263,25 @@ export default {
     const origin = request.headers.get("Origin") || "";
 
     if (request.method === "OPTIONS") {
-      if (origin && !isAllowedOrigin(origin)) {
-        return buildErrorResponse("Origin not allowed.", 403, "");
+      if (!origin || !ALLOWED_ORIGINS.has(origin)) {
+        return new Response(null, {
+          status: 403,
+          headers: getCorsHeaders(request),
+        });
       }
 
       return new Response(null, {
         status: 204,
-        headers: Object.fromEntries(getCorsHeaders(origin)),
+        headers: getCorsHeaders(request),
       });
     }
 
     if (request.method !== "POST") {
-      return buildErrorResponse("Method not allowed.", 405, origin);
+      return buildErrorResponse(request, "Method not allowed.", 405);
     }
 
-    if (origin && !isAllowedOrigin(origin)) {
-      return buildErrorResponse("Origin not allowed.", 403, "");
+    if (origin && !ALLOWED_ORIGINS.has(origin)) {
+      return buildErrorResponse(request, "Origin not allowed.", 403);
     }
 
     try {
@@ -307,7 +290,7 @@ export default {
       const action = normalizeText(body.action);
 
       if (!["generateRoutine", "chat"].includes(action)) {
-        return buildErrorResponse("Unsupported action.", 400, origin);
+        return buildErrorResponse(request, "Unsupported action.", 400);
       }
 
       const selectedProducts = normalizeProducts(body.selectedProducts);
@@ -320,9 +303,9 @@ export default {
 
       if (action === "chat" && !message) {
         return buildErrorResponse(
+          request,
           "Chat messages cannot be empty.",
           400,
-          origin,
         );
       }
 
@@ -341,14 +324,32 @@ export default {
         history,
         action,
       );
-      return buildOkResponse(result, origin);
+      return buildOkResponse(request, result);
     } catch (error) {
+      console.error("Worker error:", error);
+
       const message =
         error instanceof Error
           ? error.message
           : "An unexpected error occurred.";
-      const status = message.includes("too large") ? 413 : 400;
-      return buildErrorResponse(message, status, origin);
+
+      const knownClientError =
+        message.includes("too large") ||
+        message.includes("must") ||
+        message.includes("Select at least one product") ||
+        message.includes("Too many products") ||
+        message.includes("missing a product name or brand") ||
+        message.includes("Unsupported action") ||
+        message.includes("Chat messages cannot be empty") ||
+        message.includes("Request body must be valid JSON");
+
+      const status = message.includes("too large")
+        ? 413
+        : knownClientError
+          ? 400
+          : 500;
+
+      return buildErrorResponse(request, message, status);
     }
   },
 };
