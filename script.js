@@ -268,7 +268,7 @@ function productMatchesSearch(product, searchValue) {
   const id = String(
     typeof item === "string"
       ? item
-      : item && (item.stableId ?? item.id ?? item.productId ?? ""),
+      : item && (item.stableId ?? item.id ?? item.productId ?? "")
   );
 }
 
