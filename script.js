@@ -618,11 +618,7 @@ function getWorkerRequestBody(action, extraFields = {}) {
 }
 
 function validateWorkerUrl() {
-  if (
-    WORKER_URL.includes(
-      "https://loreal-routine-builder.agusionucherish.workers.dev",
-    )
-  ) {
+  if (WORKER_URL.includes("PASTE_YOUR_WORKER_URL_HERE")) {
     throw new Error("Worker URL has not been configured yet.");
   }
 }
