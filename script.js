@@ -218,13 +218,17 @@ function normalizeStoredSelection(value) {
   const validIds = new Map(
     allProducts.map((product) => [String(product.stableId), product]),
   );
+
   const restored = [];
 
   value.forEach((item) => {
-    const id = String(
-      item && (item.stableId ?? item.id ?? item.productId ?? ""),
-    );
+    const id =
+      typeof item === "string"
+        ? item
+        : String(item?.stableId ?? item?.id ?? item?.productId ?? "");
+
     const product = validIds.get(id);
+
     if (
       product &&
       !restored.some((entry) => entry.stableId === product.stableId)
@@ -265,11 +269,7 @@ function productMatchesSearch(product, searchValue) {
     .join(" ")
     .toLowerCase();
 
-  const id = String(
-    typeof item === "string"
-      ? item
-      : item && (item.stableId ?? item.id ?? item.productId ?? "")
-  );
+  return haystack.includes(searchValue);
 }
 
 function getFilteredProducts() {
